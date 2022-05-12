@@ -5,11 +5,60 @@
 A DATABASE is a collection of data stored in a format that can easily be accessed
 
 1. Relational Database
-2. NoSQL
+2. NoSQL MongoDB
 
 把数据存储在**通过某些关系相互关联的数据表中，每张表储存特定的一类数据**
 
+如果每个应用程序都各自写自己的读写的代码，一方面效率低，容易出错，另一方面，每个应用程序访问数据的接口都不相同，数据难以复用。有了数据库之后，应用程序不需要自己管理数据，而是通过数据库软件提供的接口来读写数据。
+
+## 主流商业数据库
+
+1. 商用数据库 Oracle SQL server 
+2. 开源数据库 MySQL PostgreSQL
+3. 桌面数据库 Access
+4. 嵌入式数据库 Sqlite 适合手机应用和桌面程序
+
+## SQL
+
 SQL（Structured Query Language，结构化查询语言）是专门用来处理（包括查询和修改）关系型数据库的标准语言
+
+不同的数据库都支持SQL，但是某个特定数据库的扩展SQL换一个类型就不能执行了
+
+DDL Data Definition Language
+
+DML Data Manipulation Language
+
+DQL Data Query Language
+
+SQL语言不区分大小写，但是针对表明和列名，有的数据库会区分大小写
+
+## Primary Key
+
+对于关系表，任意两条记录不能重复。不是指两条记录不完全相同，而是指能够通过某个字段唯一区分出不同的记录，这个字段成为主键。
+
+主键一旦插入，不能再修改，所以不使用任何业务相关的字段作为主键。
+
+关系数据库还允许通过多个字段唯一标识记录，这种主键被称为联合主键。对于联合主键，允许一列有重复。一般不使用联合主键。
+
+## Foreign Key
+
+外键是通过定义外键约束实现的
+
+```sql
+ALTER TABLE students
+ADD CONSTRAINT fk_class_id # 外键约束名称
+FOREIGN KEY (class_id)  # 指定class_id作为外键
+REFERENCES classes (id); # 将外键关联到classes表的id列
+
+ALTER TABLE students
+DROP FOREIGN KEY fk_class_id;
+```
+
+由于外键约束会降低数据库性能，大部分情况下为了追求速度并不设置外键约束，而是靠程序自身保证逻辑正确。
+
+## Index
+
+
 
 ## Retrieving Data From a Single Table
 
