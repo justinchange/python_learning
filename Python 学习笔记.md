@@ -87,6 +87,13 @@ UTF-8 “可变长编码”，常用的英文字母被编码成 1 个字节，�
 
 ## Datatypes
 
+- **Data types** are like words,
+- **statements** are like sentences,
+- **Functions** are like paragraphs
+- and **Modules** are like chapters.
+- **Packages** are like books
+- **Programs** are like many books
+
 ### Integer
 
 对于很大的数，Python允许在数字中间以`_`分隔，10_000_000_000
@@ -102,6 +109,24 @@ python 2 对于长整数 会有 Long 这种数据类型，python 3 中 int 可�
 ### String
 
 Python允许用`'''...'''`的格式表示多行内容
+
+```python
+align = 'Learn how to align'
+align.ljust(30) # 30个字符 左对齐
+align.rjust(30)
+align.strp()
+
+py_desc.startswith('Python') # 判断是否以此开头
+py_desc.endswith('effectively.') # 判断是否以此结尾
+py_desc.find('language') # 寻找在字符串中的位置
+py_desc.isalnum() # 判断是否为alphnu 字母或数字 不能包含特殊字符包括空格
+py_desc.count("Python") # 判断字符出现频率
+py_desc.strip('.') # 去除字符
+py_desc.upper()
+py_desc.title()
+```
+
+
 
 ### 判断数据类型
 
@@ -122,6 +147,8 @@ False
 | ------------------------------------------------------------ | ------------------------------- |
 | int,float, complex, bool, str                                | fundamental datatypes immutable |
 | list, tuple, set, dict, frozenset, bytes, bytearray and range | collection datatypes            |
+
+![img](https://gimg2.baidu.com/image_search/src=http%3A%2F%2Finews.gtimg.com%2Fnewsapp_bt%2F0%2F14456633255%2F1000&refer=http%3A%2F%2Finews.gtimg.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1647674461&t=2454dec72e7d6e161739071bcf911e52)
 
 ## Operator
 
@@ -144,12 +171,21 @@ math.pow(2,3) 得到的是float
 - 我们可以使用 len() 函数获得 lists 中元素的个数
 - 使用 append() 在尾部添加元素
 - 使用 insert(1,'read') 在列表中插入元素
-- 使用 pop() 删除尾部或指定位置的元素。
-
+- 使用 pop() 删除尾部或指定位置的元素，也可以使用`del list[0]` 
+- 使用`remove('itemname')` 删除特定元素
+- 判断是否存在用 in 
+- Nested list (list of list)
 
 list.remove('red') 按值删除第一个符合要求的值
 list.extend([7,8]) 添加元素到既有列表中，比"+"要快
-list.sort(key=len) 根据字符长度对列表元素进行排序
+list.sort(key=len) 根据字符长度对列表元素进行排序或者sorted(list)
+
+```python
+b=a # 与原变量有关系
+c = a.copy() # 与原变量无关系
+d = a[:]
+e = list(a)
+```
 
 ## Tuple
 
@@ -423,6 +459,7 @@ print(f()) # 2 在返回的函数里面并没有定义x，所以在给x赋值的
 - 不必担心函数名冲突
 - 可以把匿名函数赋值给一个变量，再利用变量来调用函数
 - 可以把匿名函数作为返回值返回
+- 配合Map Reduce 使用
 
 ## Python decorators 装饰器
 
@@ -1027,7 +1064,7 @@ True
 
 ## list set map 生成式  List Comprehensions
 
-- [x.upper() for x in strings] {len(x) for x in strings} {val:index for index, val in enumerate(strings)}
+- [expression for item in iterable] {len(x) for x in strings} {val:index for index, val in enumerate(strings)}
 - [m + n for m in 'ABC' for n in 'XYZ'] 两层循环
 
 ```python
@@ -1278,6 +1315,10 @@ pip install --ignor_installed --upgrade tensorflow
 - 数组计算遍历所有的元素，不像列表 list 还需要对内存地址进行查找
 - NumPy 直接利用现代 CPU 的矢量化指令 计算，加载寄存器中的多个连续浮点数
 - 矩阵计算可以采用多线程的方式
+- Saves loops and therefore saves time
+- Easy slicing using location
+- Easy to do elementwise operations
+- Support more advanced data type like DataFrame
 
 ### ndarray
 
@@ -1326,6 +1367,10 @@ np.power(x1, x2)
 np.remainder(x1, x2)
 ```
 
+A*B 直接相乘是对每个元素相乘
+
+A.dot(B) 或者 np.dot(A,B) 是矩阵相乘
+
 np.dot 和 np.matmul 的区别 面试可能会考
 
 
@@ -1357,6 +1402,7 @@ sort(a, axis=-1, kind=‘quicksort’, order=None)
 ```
 
 ```python
+# Slicing
 #np 数据与 python 数据的差异：ability to broadcast
 slice_of_arr = arr[0:6]
 slice_of_arr[:]=99 #对slice做出的更改会反映到原数据上
@@ -1401,6 +1447,70 @@ Unicode U
 
 S32 代表 32 个字符的字符串
 
+### Matrix Operation
+
+```python
+a = np.array([[1,2,3],[3,4,5]],dtype='float')
+a.T # a.T 把所有的维度直接反过来
+a = np.array([[[1,2,3,0],[3,4,5,2]]]) # （1,2,4）
+a.T # (4,2,1)
+
+# Transpose a.transpose 可以指定如何变换
+a3d.transpose([0,2,1]) # 第一个维度不变，后两个维度交换
+a3d.T=a3d.transpose()
+
+# Inverse Matrix 求逆矩阵
+if dot(A,B)==Identity matrix, then B=inv(A)
+np.linalg.inv(A)
+# 检查是否满足条件
+np.allclose(np.dot(a,inv(a)),np.eye(2)) # 检查矩阵是否相等
+
+# Eigenvalue and Normalized Eigenvector 特征值和特征向量
+np.linalg.eig(c)
+
+# Trace 矩阵的迹
+np.trace(a)
+
+# Swap axes 交换轴
+a.swapaces(0,1) # 交换轴与转置类似，不会改变矩阵
+
+# Bincount 仅限array
+np.bincount(np.array([1, 1, 2, 10, 2, 4, 7]))
+# array([0, 2, 2, 0, 1, 0, 0, 1, 0, 0, 1], dtype=int64) 找到0-10每个值出现的频率
+```
+
+### Array Processing
+
+```python
+# Meshgrid 用两个坐标轴上的点在平面上画网格
+[X,Y] = meshgrid(x,y) # 将向量x和y定义的区域转换成矩阵X和Y
+不是很理解
+
+# test whether a 1D array element present in another array
+e=np.array([1,2,3,4,5])
+np.inld([2,4,8],e) # 中间是数字1
+# array([ True,  True, False], dtype=bool)
+
+# Unique 得到不重复的元素
+np.uniqe(e) 
+```
+
+### 将数组以二进制保存到磁盘
+
+```python
+# Save a single array 
+np.save('array_a',a)
+np.load('array_a.npy')
+
+# Save multiple arrays
+np.savez('two_arrays.npz',x=b,y=c)
+np.load('two_arrays.npz')['x']
+
+# save to csv
+np.savetxt('array_text.txt',b,delimiter=',')
+np.loadtxt('array_text.txt',delimiter=',')
+```
+
 ## Pandas
 
 ```python
@@ -1409,11 +1519,12 @@ S32 代表 32 个字符的字符串
 labels=['a','b','c']
 my_data=[10,20,30]
 pd.Series(my_data,labels)
-
 # a    10
 # b    20
 # c    30
 # dtype: int64
+pd.Series(my_data,labels).values
+# array([10, 20, 30], dtype=int64) Series的values相当于numpy里面的array
 
 ser1=pd.Series([1,2,3,4],['usa','germany','ussr','japan'])
 ser2=pd.Series([1,2,5,4],['usa','germany','italy','japan'])
@@ -1425,12 +1536,25 @@ ser3=pd.Series(data=labels)
 # 1    b
 # 2    c
 # dtype: object
+
+# Conversion between series and dict
+s2.dict=s2.too_dict()
+s2.series=pd.Series(s2_dict)
+
+s2['Jack']
+s2.loc['Jack']
+s2.iloc[0]
+s2.shape
+s2.size
+s2.drop_duplicates()
+pd.isnull(s2)
 ```
 
 ```python
 # Dataframes
 from numpy.random import randn
 df = pd.DataFrame(randn(5,4),['a','b','c','d','e'],['w','x','y','z'])
+# values, index, columns
 
 #  	       w 	         x        	y 	        z
 # a 	2.706850 	0.628133 	0.907969 	0.503826
@@ -1442,6 +1566,8 @@ df = pd.DataFrame(randn(5,4),['a','b','c','d','e'],['w','x','y','z'])
 # 提取数据
 df['w']
 df.w # 不推荐，可能会跟Method弄混
+df.shape
+df.size
 
 df['new'] = df['w']+df['y']
 
@@ -1450,6 +1576,8 @@ df.drop('new',axis=1,inplace=True)
 df.loc['a'] # label based index
 df.loc[['b','c'],'y']
 df.iloc[0] # numerical based index
+df.head()
+d
 
 df1.add(df2,fill_value=0) # DataFrame 直接相加，补充和的地方会变为NaN 用fill_value可以填充为0
 
