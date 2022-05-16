@@ -58,6 +58,20 @@ DROP FOREIGN KEY fk_class_id;
 
 ## Index
 
+索引是关系数据库中对某一列或多个列的值进行预排序的数据结构。通过使用索引，可以让数据库系统不必扫描整个表，而是直接定位到符合条件的记录，加快查询速度。索引的列值越互不相同，那么索引效率越高。
+
+索引可以提高查询效率，但是会拖慢插入、更新和删除记录的速度。
+
+```sql
+ALTER TABLE students
+ADD INDEX idx_score (score)
+
+ALTER TABLE students
+ADD UNIQUE INDEX idx_score (score)
+```
+
+
+
 
 
 ## Retrieving Data From a Single Table
@@ -67,6 +81,8 @@ DROP FOREIGN KEY fk_class_id;
 - SELECT FROM WHERE ORDER BY
 - AS 别名
 - DISTINCT 使用
+- LIMIT M OFFSET N 随着N越大，查询效率越低
+- SELECT * FROM 表1M, 表2N 笛卡尔乘积  MxN个记录
 
 ### Where Statement
 
@@ -80,7 +96,7 @@ DROP FOREIGN KEY fk_class_id;
 
 实现多重条件筛选
 
-AND 优先级高于 OR
+NOT AND 优先级高于 OR
 
 ### IN 运算符
 
@@ -171,6 +187,8 @@ Limit 在最后
 
 `LEFT/RIGHT (OUTER) JOIN` 结果里除了交集，还包含只出现在左/右表中的记录
 
+FULL OUTER JOIN，它会把两张表的所有记录全部选择出来，并且，自动把对方不存在的列填充为NULL
+
 ### OUTER JOIN BETWEEN MULTIPLE TABLES 多表外连接
 
 统一只用 [INNER] JOIN 和 LEFT [OUTER] JOIN
@@ -209,6 +227,10 @@ INSERT INTO ()
 VALUES (),()
 
  last_insert_id() 把父表记录插入子表
+
+如果我们希望插入一条新记录（INSERT），但如果记录已经存在，就更新该记录，此时，可以使用`INSERT INTO ... ON DUPLICATE KEY UPDATE ...`
+
+如果我们希望插入一条新记录（INSERT），但如果记录已经存在，就啥事也不干直接忽略，此时，可以使用`INSERT IGNORE INTO ...`
 
 CREATE TABLE 新表名 AS 子查询
 
