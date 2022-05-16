@@ -655,8 +655,8 @@ ALTER EVENT yearly_delete_stale_audit_row [DISABLE/ENABLE]
 
 **ACID 特性**
 
-1. Atomicity 不可拆分性
-2. Consistency 一致性
+1. Atomicity 不可拆分性 将所有SQL作为原子工作单元执行，要么全部执行，要么全部不执行
+2. Consistency 一致性，事务完成之后，所有数据的状态是一致的
 3. Isolation 隔离性：多个事务要修改相同数据，每次只能被一个事务修改
 4. Durability 持久性：事务执行完毕，修改是永久的
 
