@@ -737,7 +737,7 @@ lag 数据向后移动
 
 lead 数据向前移动
 
-first_value 和 last_value nth_value 截止到当前行的第一个或最后一个或第Nge
+first_value 和 last_value nth_value 截止到当前行的第一个或最后一个或第N个
 
 ### 聚合函数作为窗口函数
 
