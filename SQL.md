@@ -708,6 +708,43 @@ SET [SESSION]/[GLOBAL] TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
 死锁不能完全避免，但是可以减少发生
 
+## 窗口函数 OLAP
+
+窗口指的是记录集合，窗口函数，也叫 Online Analytical Processing 函数， 在满足某些条件的记录集合上执行指定的函数方法。可以解决每组内排序的问题。
+
+因为窗口函数是对 where 或 group by 子句处理后的结果操作，所以窗口函数原则上只能写在 select 子句中。
+
+与group by 的区别：窗口函数同时具有分组和排序的功能，不减少原表的行数。
+
+`<窗口函数> over (partition by <用于分组的列名> order by <用于排序的列名>)`
+
+窗口函数的位置可以放置以下两种：
+
+1. 专用窗口函数，包括 rank, dense_rank, row_number 等
+2. 聚合函数，如 sum, avg, count, max, min 等
+
+### rank, dense_rank, row_number 的区别
+
+- rank 碰到并列名次会占用下一名次的位置 1 1 1 4
+- dense_rank 碰到并列名次不会占用下一名次的位置 1 1 1 2
+- row_number 不考虑并列名次 1 2 3 4
+
+### 序列函数
+
+ntile 将数据进行切片分组
+
+lag 数据向后移动
+
+lead 数据向前移动
+
+first_value 和 last_value nth_value 截止到当前行的第一个或最后一个或第Nge
+
+### 聚合函数作为窗口函数
+
+聚合函数在窗口函数中是对自身记录，及自身记录以上的数据进行计算
+
+可以看到截止到本行，统计数据是多少，也可以看到每一行数据，对整体统计数据的影响。
+
 # 第五部分：脱颖而出——数据类型、设计数据库、索引、保护
 
 ## 数据类型 Data Types
