@@ -779,6 +779,233 @@ MEDIUMTEXT 最大存储16MB
 
 
 
+# PayPal 数据库实战
+
+## Account
+
+### 用名字查找账号
+
+```sql
+select customer_id,
+customer_primary_residence,
+customer_created_date,
+customer_first_name,
+customer_last_name,
+primary_email_name
+from pp_access_pii_views.dw_customer a
+where 
+customer_first_name = '伟标'
+and
+customer_last_name = '朱'
+```
+
+### 用邮箱查找账号
+
+```sql
+select 
+primary_email_name,
+customer_id,
+customer_created_date,
+customer_first_name,
+customer_last_name,
+customer_primary_residence
+from pp_access_pii_views.dw_customer 
+where primary_email_name in
+(
+'gzyang32@gmail.com'
+)
+```
+
+### ALF Dropshipper Flag
+
+```sql
+SELECT 
+a.cust_id,
+a.flag_name,
+b.customer_primary_residence,
+c.busn_name
+FROM pp_access_views.dw_rsk_acct_flg a
+LEFT JOIN pp_access_pii_views.dw_customer b
+ON a.cust_id = b.customer_id
+LEFT JOIN pp_discovery_pii_views.dim_customer c
+ON a.cust_id=c.cust_id
+WHERE flag_name IN 
+(
+'alf_global_dropshipping'
+)
+AND 
+customer_primary_residence IN ('HK','JP','KR','TW')
+```
+
+### 查找所有的ALF
+
+```sql
+select flag_name, flag_desc
+from pp_access_views.dw_rsk_acct_flags_desc
+```
+
+### Available balance and Reserve
+
+```sql
+SELECT
+b.customer_id,
+b.calendar_date,
+b.curr_cd,
+LAST_VALUE (b.balance_amt*0.01 IGNORE NULLS) OVER(PARTITION BY b.customer_id,b.curr_cd ORDER BY b.calendar_date)AS curr_balance,
+curr_balance *c.site_exchng_rate AS usd_balance,
+LAST_VALUE (b.balance_collateral_amt*0.01 IGNORE NULLS) OVER(PARTITION BY b.customer_id,b.curr_cd ORDER BY b.calendar_date)AS curr_collateral_balance,
+curr_collateral_balance *c.site_exchng_rate AS usd_collateral_balance,
+usd_balance-usd_collateral_balance AS usd_available_balance
+FROM 
+(
+SELECT 
+a.*,
+bal.BALANCE_AMT,
+bal.BALANCE_COLLATERAL_AMT      
+FROM 
+(SELECT
+cal.calendar_date,
+curr.*
+FROM (SELECT  calendar_date FROM sys_calendar.CALENDAR WHERE calendar_date BETWEEN '2020-04-01'AND CURRENT_DATE) cal
+CROSS JOIN (SELECT UNIQUE curr_cd,customer_id FROM PP_ACCESS_VIEWS.FACT_STORED_VAL_ACCT_DLY  
+WHERE customer_id IN
+(
+--think tech
+'2080309511278239084',
+'2240608850739832784'
+)
+AND 
+bal_dt BETWEEN '2020-04-01' AND CURRENT_DATE ) curr) a 
+LEFT JOIN PP_ACCESS_VIEWS.FACT_STORED_VAL_ACCT_DLY bal 
+ON (a. calendar_date=bal.bal_dt AND a.curr_cd=bal.curr_cd AND a.customer_id=bal.customer_id)
+) b
+LEFT JOIN pp_access_views.DIM_CURR_EXCHNG_RATE_DLY c
+ON  b.curr_cd = c.from_curr_code AND c.to_curr_code = 'USD' AND b.calendar_date=c.exchng_rate_dt
+ORDER BY b.calendar_date DESC, b.customer_id
+```
+
+### 根据公司名查账号
+
+```sql
+SELECT 
+a.busn_name,
+a.cust_id,
+b.customer_primary_residence,
+c.seg
+FROM pp_discovery_pii_views.dim_customer a
+LEFT JOIN pp_access_pii_views.dw_customer b
+ON a.cust_id=b.customer_id
+LEFT JOIN  pp_risk_roe_views.seller_seg_bu_hist c
+ON a.cust_id=c.cust_id
+WHERE a.busn_name IN 
+(
+'ETERNITY INTERNATIONAL TRADING LIMITED'
+)
+AND c.end_date='2050/12/31';
+```
+
+### 重复购买率计算
+
+```sql
+select 
+sndr_id,
+sum(pmt_usd_amt) as received_usd,
+count(xclick_item_name) as received_count,
+cast (received_usd/received_count as decimal(10,1)) as average_ATP,
+cast (90.0/received_count as decimal(10,1)) as frequency
+from pp_discovery_views.fact_payment
+where rcvr_id in 
+(
+'1154517568094577332'
+)
+and sndr_id not in 
+(
+'1525421916808635360'
+)
+and pmt_success_dt>=current_date-90
+having received_count>1
+group by 1
+order by 2 desc;
+```
+
+### 查找卖指定产品的卖家
+
+```sql
+select
+rcvr_id,
+rcvr_cntry_code,
+sum(pmt_usd_amt) as TRAN_AMT
+from pp_discovery_views.fact_payment
+where
+xclick_item_name like '%dust cleaning mud%'
+and 
+pmt_txn_status_code in ('S','P','V')
+and 
+pmt_success_dt>=current_date-90
+group by 1,2
+order by TRAN_AMT DESC
+```
+
+### 指定日期内的详细交易
+
+```sql
+select 
+pmt.rcvr_id,
+pmt.sndr_id,
+pmt.pmt_success_dt,
+pmt.pmt_usd_amt,
+ur.return_url
+from pp_discovery_views.fact_payment pmt
+inner join  pp_access_views.dw_trans_data_map m
+on m.tdm_id = pmt.pmt_txnid and m.tdm_cre_date = pmt.pmt_cre_dt
+left join PP_ACCESS_VIEWS.DW_XCLICK_URL ur 
+on m.map_id=ur.txn_data_map_id
+where 
+rcvr_id = '1829348849593378951'
+and pmt.pmt_cre_dt >DATE '2018-10-01'
+and  pmt_txn_status_code in ('S','V')
+order by return_url
+```
+
+### 网址找账号
+
+```sql
+select 
+substring (a.return_url from 1 for 50) as URL,
+count (URL) as transaction_times,
+sum(c.pmt_usd_amt) as transaction_amount,
+c.rcvr_id,
+c.rcvr_src_cntry_code
+from PP_ACCESS_VIEWS.DW_XCLICK_URL a
+left join  pp_access_views.dw_trans_data_map b ON(a.txn_data_map_id=b.map_id)
+inner join pp_discovery_views.fact_payment c ON(b.tdm_id = c.pmt_txnid AND b.tdm_cre_date = c.pmt_cre_dt)
+where a.return_url like '%ticket%'
+and c.pmt_cre_dt>=current_date-30
+and c.rcvr_src_cntry_code in ('HK','JP')
+group by c.rcvr_id, URL,c.rcvr_src_cntry_code
+order by transaction_amount DESC
+```
+
+### 账号找网址
+
+```sql
+SEL rcvr_id,REGEXP_SUBSTR (ur.return_url,'[^/]+' ,1 ,2) AS url,MAX(pmt.pmt_cre_dt) AS last_txn_dt, SUM(pmt.pmt_usd_amt) AS tpv_per_url
+FROM pp_access_views.dw_trans_data_map m
+LEFT JOIN PP_ACCESS_VIEWS.DW_XCLICK_URL ur ON(m.map_id=ur.txn_data_map_id)
+INNER JOIN pp_discovery_views.fact_payment pmt ON(m.tdm_id = pmt.pmt_txnid AND m.tdm_cre_date = pmt.pmt_cre_dt)
+WHERE pmt.pmt_cre_dt >DATE '2019-09-01'
+AND pmt_txn_status_code IN('S','V')
+AND rcvr_id IN(
+'1556927788897642655',
+'1864439124672754918',
+'1609887267474783236'
+)
+GROUP BY 1,2
+
+```
+
+
+
 
 
 
